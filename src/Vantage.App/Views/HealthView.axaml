@@ -1,0 +1,43 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Vantage.App.ViewModels"
+             xmlns:conv="clr-namespace:Vantage.App.Converters"
+             mc:Ignorable="d"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             x:Class="Vantage.App.Views.HealthView"
+             x:DataType="vm:MainWindowViewModel"
+             x:CompileBindings="True">
+
+  <Grid RowDefinitions="Auto,*" Margin="4">
+
+    <Button Grid.Row="0" Content="Run all" Command="{Binding RunAllHealthCommand}" Margin="0,0,0,8" />
+
+    <Border Grid.Row="1" Classes="card">
+      <ListBox ItemsSource="{Binding HealthChecks}" Background="Transparent">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:HealthCheckViewModel">
+            <Grid ColumnDefinitions="Auto,2*,3*,Auto,Auto" Margin="0,6">
+              <Ellipse Grid.Column="0" Width="10" Height="10" VerticalAlignment="Center" Margin="0,0,10,0"
+                       Fill="{Binding Status, Converter={x:Static conv:StateBrushConverters.HealthBrush}}" />
+              <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding KindText}" Foreground="#8891A0" FontSize="11" />
+              </StackPanel>
+              <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                <TextBlock Text="{Binding StatusText}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+                <TextBlock Text="{Binding Target}" Foreground="#8891A0" FontSize="11" />
+              </StackPanel>
+              <StackPanel Grid.Column="3" VerticalAlignment="Center" Margin="8,0" HorizontalAlignment="Right">
+                <TextBlock Text="{Binding LatencyText}" HorizontalAlignment="Right" />
+                <TextBlock Text="{Binding LastCheckedText}" Foreground="#8891A0" FontSize="11" HorizontalAlignment="Right" />
+              </StackPanel>
+              <Button Grid.Column="4" Content="Check" Command="{Binding RunCommand}" VerticalAlignment="Center" />
+            </Grid>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </Border>
+
+  </Grid>
+</UserControl>

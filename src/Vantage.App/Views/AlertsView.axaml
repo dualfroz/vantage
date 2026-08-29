@@ -1,0 +1,45 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Vantage.App.ViewModels"
+             xmlns:alerts="clr-namespace:Vantage.Core.Alerts;assembly=Vantage.Core"
+             mc:Ignorable="d"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             x:Class="Vantage.App.Views.AlertsView"
+             x:DataType="vm:MainWindowViewModel"
+             x:CompileBindings="True">
+
+  <Grid RowDefinitions="Auto,*" Margin="4">
+
+    <TextBlock Grid.Row="0" Margin="2,0,0,8" Foreground="#8891A0" FontSize="12"
+               Text="{Binding FiringAlertCount, StringFormat='Firing: {0}'}" />
+
+    <Border Grid.Row="1" Classes="card">
+      <ScrollViewer>
+        <ItemsControl ItemsSource="{Binding Alerts}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="alerts:AlertStatus">
+              <Grid ColumnDefinitions="Auto,2*,2*,Auto" Margin="0,7">
+                <Border Grid.Column="0" Width="8" Margin="0,0,10,0" CornerRadius="2" Background="#333A45" />
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                  <TextBlock Text="{Binding RuleName}" FontWeight="SemiBold" />
+                  <TextBlock Text="{Binding HostId}" Foreground="#8891A0" FontSize="11" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                  <TextBlock Text="{Binding Metric}" />
+                  <TextBlock Foreground="#8891A0" FontSize="11"
+                             Text="{Binding LastValue, StringFormat='value {0:0.##}'}" />
+                </StackPanel>
+                <StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right">
+                  <TextBlock Text="{Binding State}" HorizontalAlignment="Right" FontWeight="SemiBold" />
+                  <TextBlock Text="{Binding Severity}" Foreground="#8891A0" FontSize="11" HorizontalAlignment="Right" />
+                </StackPanel>
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </Border>
+
+  </Grid>
+</UserControl>
