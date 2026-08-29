@@ -1,0 +1,77 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Vantage.App.ViewModels"
+             xmlns:conv="clr-namespace:Vantage.App.Converters"
+             mc:Ignorable="d"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             x:Class="Vantage.App.Views.FleetView"
+             x:DataType="vm:MainWindowViewModel"
+             x:CompileBindings="True">
+
+  <Grid RowDefinitions="Auto,*" Margin="4">
+
+    <Border Grid.Row="0" Classes="card" Margin="0,0,0,10" Padding="14,10">
+      <StackPanel Orientation="Horizontal" Spacing="26">
+        <StackPanel>
+          <TextBlock Text="Hosts" Foreground="#8891A0" FontSize="11" />
+          <TextBlock Text="{Binding Overview.TotalHosts}" FontSize="20" FontWeight="Bold" />
+        </StackPanel>
+        <StackPanel>
+          <TextBlock Text="Online" Foreground="#8891A0" FontSize="11" />
+          <TextBlock Text="{Binding Overview.OnlineHosts}" FontSize="20" FontWeight="Bold" Foreground="#4CAF50" />
+        </StackPanel>
+        <StackPanel>
+          <TextBlock Text="Offline" Foreground="#8891A0" FontSize="11" />
+          <TextBlock Text="{Binding Overview.OfflineHosts}" FontSize="20" FontWeight="Bold" Foreground="#EF5350" />
+        </StackPanel>
+        <StackPanel>
+          <TextBlock Text="Avg CPU" Foreground="#8891A0" FontSize="11" />
+          <TextBlock Text="{Binding Overview.AverageCpuPercent, StringFormat='{}{0:0.#}%'}" FontSize="20" FontWeight="Bold" />
+        </StackPanel>
+        <StackPanel>
+          <TextBlock Text="Peak CPU host" Foreground="#8891A0" FontSize="11" />
+          <TextBlock Text="{Binding Overview.PeakCpuHost}" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Bottom" />
+        </StackPanel>
+        <StackPanel>
+          <TextBlock Text="Firing alerts" Foreground="#8891A0" FontSize="11" />
+          <TextBlock Text="{Binding FiringAlertCount}" FontSize="20" FontWeight="Bold" Foreground="#FFB300" />
+        </StackPanel>
+      </StackPanel>
+    </Border>
+
+    <ScrollViewer Grid.Row="1">
+      <ItemsControl ItemsSource="{Binding Hosts}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <WrapPanel />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:HostViewModel">
+            <Border Classes="card" Width="240" Margin="0,0,10,10" Padding="12">
+              <StackPanel Spacing="6">
+                <Grid ColumnDefinitions="Auto,*">
+                  <Ellipse Grid.Column="0" Width="10" Height="10" VerticalAlignment="Center" Margin="0,0,8,0"
+                           Fill="{Binding IsOnline, Converter={x:Static conv:StateBrushConverters.RunningBrush}}" />
+                  <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold"
+                             TextTrimming="CharacterEllipsis" />
+                </Grid>
+                <TextBlock Text="{Binding StatusText}" Foreground="#8891A0" FontSize="11" />
+                <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" Margin="0,4,0,0">
+                  <TextBlock Grid.Row="0" Grid.Column="0" Text="CPU" Foreground="#8891A0" FontSize="11" Margin="0,0,10,0" />
+                  <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding CpuUsagePercent, StringFormat='{}{0:0.#}%'}" FontSize="12" />
+                  <TextBlock Grid.Row="1" Grid.Column="0" Text="RAM" Foreground="#8891A0" FontSize="11" Margin="0,0,10,0" />
+                  <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding MemoryUsedPercent, StringFormat='{}{0:0.#}%'}" FontSize="12" />
+                  <TextBlock Grid.Row="2" Grid.Column="0" Text="Disk" Foreground="#8891A0" FontSize="11" Margin="0,0,10,0" />
+                  <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding DiskUsedPercent, StringFormat='{}{0:0.#}%'}" FontSize="12" />
+                </Grid>
+              </StackPanel>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+
+  </Grid>
+</UserControl>
