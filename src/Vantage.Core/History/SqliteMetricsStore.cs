@@ -25,12 +25,6 @@ public sealed class SqliteMetricsStore : IMetricsStore, IAsyncDisposable, IDispo
     public static SqliteMetricsStore InMemory() =>
         new($"Data Source=vantage-{Guid.NewGuid():N};Mode=Memory;Cache=Shared");
 
-    public static string DefaultPath()
-    {
-        var root = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        return Path.Combine(root, "vantage", "history.db");
-    }
-
     public async Task RecordAsync(MetricSample sample, CancellationToken cancellationToken = default)
     {
         await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
