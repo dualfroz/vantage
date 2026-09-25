@@ -76,8 +76,8 @@ public sealed class MockMetricsProvider : IMetricsProvider
 
     private static double Oscillate(double elapsedSeconds, double period, double phase, double min, double max)
     {
-        var wave = (Math.Sin(elapsedSeconds / period * Math.PI * 2 + phase) + 1) / 2.0;
-        return min + wave * (max - min);
+        var swing = (Math.Sin(elapsedSeconds / period * Math.PI * 2 + phase) + 1) / 2.0;
+        return min + swing * (max - min);
     }
 
     private static int StableSeed(string value)

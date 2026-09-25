@@ -11,33 +11,42 @@
 
   <Grid RowDefinitions="Auto,*,Auto" Margin="4">
 
-    <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
-      <Button Content="Refresh" Command="{Binding RefreshCommand}" />
-      <TextBlock Text="Loading..." Foreground="#8891A0" VerticalAlignment="Center"
-                 IsVisible="{Binding IsBusy}" />
-      <TextBlock Text="{Binding LastError}" Foreground="{DynamicResource DownBrush}" VerticalAlignment="Center"
-                 IsVisible="{Binding LastError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-    </StackPanel>
+    <DockPanel Grid.Row="0" Margin="0,0,0,8">
+      <TextBlock DockPanel.Dock="Right" Classes="caption" Text="{Binding SummaryText}" VerticalAlignment="Center" />
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <Button Content="Refresh" Command="{Binding RefreshCommand}" />
+        <TextBlock Text="Loading..." Foreground="#8891A0" VerticalAlignment="Center"
+                   IsVisible="{Binding IsBusy}" />
+        <TextBlock Text="{Binding LastError}" Foreground="{DynamicResource DownBrush}" VerticalAlignment="Center"
+                   TextTrimming="CharacterEllipsis"
+                   IsVisible="{Binding LastError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+      </StackPanel>
+    </DockPanel>
 
     <Border Grid.Row="1" Classes="card">
-      <ListBox ItemsSource="{Binding Containers}"
-               SelectedItem="{Binding SelectedContainer}"
-               Background="Transparent">
-        <ListBox.ItemTemplate>
-          <DataTemplate x:DataType="vm:DockerContainerViewModel">
-            <Grid ColumnDefinitions="Auto,*,2*,Auto" Margin="0,4">
-              <Ellipse Grid.Column="0" Width="10" Height="10" VerticalAlignment="Center" Margin="0,0,10,0"
-                       Fill="{Binding IsRunning, Converter={x:Static conv:StateBrushConverters.RunningBrush}}" />
-              <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center" />
-              <TextBlock Grid.Column="2" Text="{Binding Image}" Foreground="#8891A0" VerticalAlignment="Center" />
-              <TextBlock Grid.Column="3" Text="{Binding StatusText}" Foreground="#8891A0" VerticalAlignment="Center" />
-            </Grid>
-          </DataTemplate>
-        </ListBox.ItemTemplate>
-      </ListBox>
+      <Grid>
+        <ListBox ItemsSource="{Binding Containers}"
+                 SelectedItem="{Binding SelectedContainer}"
+                 Background="Transparent">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:DockerContainerViewModel">
+              <Grid ColumnDefinitions="Auto,*,2*,Auto" Margin="0,4">
+                <Ellipse Grid.Column="0" Width="10" Height="10" VerticalAlignment="Center" Margin="0,0,10,0"
+                         Fill="{Binding IsRunning, Converter={x:Static conv:StateBrushConverters.RunningBrush}}" />
+                <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                <TextBlock Grid.Column="2" Text="{Binding Image}" Foreground="#8891A0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="8,0" />
+                <TextBlock Grid.Column="3" Text="{Binding StatusText}" Foreground="#8891A0" VerticalAlignment="Center" />
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+        <TextBlock Classes="caption" Margin="4" IsVisible="{Binding IsEmpty}"
+                   Text="Docker reported no containers on this host." />
+      </Grid>
     </Border>
 
-    <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" Margin="0,10,0,0">
+    <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" Margin="0,10,0,0"
+                IsEnabled="{Binding SelectedContainer, Converter={x:Static ObjectConverters.IsNotNull}}">
       <Button Content="Start" Command="{Binding StartCommand}" CommandParameter="{Binding SelectedContainer}" />
       <Button Content="Stop" Command="{Binding StopCommand}" CommandParameter="{Binding SelectedContainer}" />
       <Button Content="Restart" Command="{Binding RestartCommand}" CommandParameter="{Binding SelectedContainer}" />

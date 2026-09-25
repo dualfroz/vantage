@@ -20,12 +20,13 @@ public static class DemoData
         {
             LogSource.Journal("docker", "Docker"),
             LogSource.Journal("ssh", "SSH"),
+            LogSource.Journal("nginx", "nginx"),
             LogSource.File("/var/log/syslog", "syslog")
         },
         Hosts =
         {
-            new HostConfig { Name = "edge-01", Address = "10.20.0.11", Username = "root", AuthMethod = SshAuthMethod.PrivateKey, PrivateKeyPath = "~/.ssh/id_ed25519" },
-            new HostConfig { Name = "storage-01", Address = "10.20.0.21", Username = "ops", AuthMethod = SshAuthMethod.PrivateKey, PrivateKeyPath = "~/.ssh/id_ed25519" },
+            new HostConfig { Name = "edge-01", Address = "192.0.2.11", Username = "root", AuthMethod = SshAuthMethod.PrivateKey, PrivateKeyPath = "~/.ssh/id_ed25519" },
+            new HostConfig { Name = "storage-01", Address = "198.51.100.21", Username = "ops", AuthMethod = SshAuthMethod.PrivateKey, PrivateKeyPath = "~/.ssh/id_ed25519" },
             new HostConfig { Name = "vps-main", Address = "vps.example.net", Username = "deploy", AuthMethod = SshAuthMethod.PrivateKey, PrivateKeyPath = "~/.ssh/id_ed25519" }
         },
         HealthChecks =

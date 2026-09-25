@@ -30,7 +30,7 @@ public partial class HealthCheckViewModel : ViewModelBase
     [RelayCommand]
     public async Task RunAsync(CancellationToken cancellationToken)
     {
-        var checkResult = await checker.CheckAsync(Config, cancellationToken).ConfigureAwait(false);
+        var checkResult = await checker.CheckAsync(Config, cancellationToken);
         Status = checkResult.Status;
         StatusText = checkResult.Status + (string.IsNullOrEmpty(checkResult.Message) ? "" : $" - {checkResult.Message}");
         LatencyText = checkResult.LatencyMs is { } ms

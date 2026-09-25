@@ -1,0 +1,99 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Vantage.App.ViewModels"
+             xmlns:conv="clr-namespace:Vantage.App.Converters"
+             xmlns:controls="clr-namespace:Vantage.App.Controls"
+             mc:Ignorable="d"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             x:Class="Vantage.App.Views.SensorsView"
+             x:DataType="vm:SensorsViewModel"
+             x:CompileBindings="True">
+
+  <Grid RowDefinitions="Auto,*" Margin="4">
+
+    <DockPanel Grid.Row="0" Margin="0,0,0,8">
+      <TextBlock DockPanel.Dock="Right" Classes="caption" Text="{Binding SampledAtText}" VerticalAlignment="Center" />
+      <StackPanel Orientation="Horizontal" Spacing="12">
+        <Button Content="Refresh" Command="{Binding RefreshCommand}" />
+        <TextBlock Classes="caption" Text="{Binding ThresholdText}" VerticalAlignment="Center" />
+        <TextBlock Text="{Binding LastError}" Classes="error" VerticalAlignment="Center" TextWrapping="NoWrap"
+                   TextTrimming="CharacterEllipsis"
+                   IsVisible="{Binding LastError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+      </StackPanel>
+    </DockPanel>
+
+    <Grid Grid.Row="1" ColumnDefinitions="3*,2*">
+
+      <Border Grid.Column="0" Classes="card" Margin="0,0,6,0">
+        <Grid RowDefinitions="Auto,Auto,Auto,*">
+          <DockPanel Grid.Row="0">
+            <TextBlock DockPanel.Dock="Left" Text="Temperatures" FontWeight="SemiBold" />
+            <TextBlock Text="{Binding HottestText}" HorizontalAlignment="Right" FontWeight="SemiBold"
+                       Foreground="{Binding HottestTone, Converter={x:Static conv:StateBrushConverters.ToneBrush}}" />
+          </DockPanel>
+          <TextBlock Grid.Row="1" Classes="caption" HorizontalAlignment="Right" Text="{Binding HottestLabel, StringFormat='hottest: {0}'}"
+                     IsVisible="{Binding HasLoaded}" />
+          <controls:SparklineControl Grid.Row="2" Values="{Binding HottestPoints}" Maximum="{Binding ScaleMaximum}" Height="52" Margin="0,8,0,12"
+                                     Stroke="#FFB300" Fill="#1AFFB300" />
+          <Grid Grid.Row="3">
+            <ScrollViewer>
+              <ItemsControl ItemsSource="{Binding Temperatures}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:TemperatureRowViewModel">
+                    <Grid ColumnDefinitions="2*,3*,80" Margin="0,5">
+                      <TextBlock Grid.Column="0" Text="{Binding Label}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="0,0,10,0" />
+                      <ProgressBar Grid.Column="1" Minimum="0" Maximum="{Binding ScaleMaximum}" Value="{Binding Celsius}" Height="6"
+                                   VerticalAlignment="Center" MinWidth="0"
+                                   Foreground="{Binding Tone, Converter={x:Static conv:StateBrushConverters.ToneBrush}}" />
+                      <TextBlock Grid.Column="2" Classes="numeric" Text="{Binding CelsiusText}" VerticalAlignment="Center" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+            <TextBlock Classes="caption" TextWrapping="Wrap" IsVisible="{Binding HasNoTemperatures}"
+                       Text="This host exposes no readable thermal zones under /sys/class/thermal." />
+          </Grid>
+        </Grid>
+      </Border>
+
+      <Border Grid.Column="1" Classes="card" Margin="6,0,0,0">
+        <Grid RowDefinitions="Auto,*">
+          <TextBlock Grid.Row="0" Text="GPU" FontWeight="SemiBold" Margin="0,0,0,10" />
+          <Grid Grid.Row="1">
+            <ScrollViewer>
+              <ItemsControl ItemsSource="{Binding Gpus}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:GpuRowViewModel">
+                    <StackPanel Spacing="8" Margin="0,0,0,16">
+                      <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                      <DockPanel>
+                        <TextBlock DockPanel.Dock="Left" Classes="caption" Text="Temperature" />
+                        <TextBlock HorizontalAlignment="Right" Text="{Binding TemperatureText}"
+                                   Foreground="{Binding TemperatureTone, Converter={x:Static conv:StateBrushConverters.ToneBrush}}" />
+                      </DockPanel>
+                      <DockPanel>
+                        <TextBlock DockPanel.Dock="Left" Classes="caption" Text="Utilization" />
+                        <TextBlock HorizontalAlignment="Right" Text="{Binding UtilizationText}" Foreground="{DynamicResource AccentBrush}" />
+                      </DockPanel>
+                      <ProgressBar Maximum="100" Value="{Binding UtilizationPercent}" Height="6" MinWidth="0" />
+                      <DockPanel>
+                        <TextBlock DockPanel.Dock="Left" Classes="caption" Text="Memory" />
+                        <TextBlock HorizontalAlignment="Right" Text="{Binding MemoryText}" />
+                      </DockPanel>
+                      <ProgressBar Maximum="100" Value="{Binding MemoryPercent}" Height="6" MinWidth="0" Foreground="#66BB6A" />
+                    </StackPanel>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+            <TextBlock Classes="caption" TextWrapping="Wrap" IsVisible="{Binding HasNoGpus}"
+                       Text="No NVIDIA GPU reported. GPUs are read through nvidia-smi when it is installed on the host." />
+          </Grid>
+        </Grid>
+      </Border>
+
+    </Grid>
+  </Grid>
+</UserControl>

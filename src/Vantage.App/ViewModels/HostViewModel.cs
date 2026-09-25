@@ -27,10 +27,18 @@ public partial class HostViewModel : ViewModelBase
         memoryHistory = new MetricsHistory(historyLength);
     }
 
-    public HostConfig Config { get; }
+    public HostConfig Config { get; private set; }
 
     public string Name => string.IsNullOrWhiteSpace(Config.Name) ? Config.Address : Config.Name;
     public string Endpoint => $"{Config.Username}@{Config.Address}:{Config.Port}";
+
+    public void UpdateConfig(HostConfig config)
+    {
+        Config = config;
+        OnPropertyChanged(nameof(Config));
+        OnPropertyChanged(nameof(Name));
+        OnPropertyChanged(nameof(Endpoint));
+    }
 
     public IReadOnlyList<double> CpuPoints => cpuHistory.Snapshot();
     public IReadOnlyList<double> MemoryPoints => memoryHistory.Snapshot();

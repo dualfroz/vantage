@@ -6,13 +6,14 @@ using Vantage.Core.Models;
 
 namespace Vantage.App.ViewModels;
 
-public partial class DockerViewModel : ViewModelBase
+public partial class DockerViewModel : ViewModelBase, IHostPanel
 {
     private readonly IDockerProvider dockerProvider;
 
     [ObservableProperty] private bool isBusy;
     [ObservableProperty] private string? lastError;
     [ObservableProperty] private DockerContainerViewModel? selectedContainer;
+    [ObservableProperty] private bool hasLoaded;
 
     public DockerViewModel(IDockerProvider dockerProvider)
     {
@@ -23,10 +24,24 @@ public partial class DockerViewModel : ViewModelBase
 
     public HostConfig? Host { get; private set; }
 
+    public bool RefreshOnTick => false;
+
+    public int RunningCount => Containers.Count(c => c.IsRunning);
+
+    public string SummaryText => HasLoaded
+        ? $"{Containers.Count} containers, {RunningCount} running"
+        : "";
+
+    public bool IsEmpty => HasLoaded && Containers.Count == 0 && string.IsNullOrEmpty(LastError);
+
     public void SetHost(HostConfig? host)
     {
         Host = host;
         Containers.Clear();
+        SelectedContainer = null;
+        LastError = null;
+        HasLoaded = false;
+        NotifySummary();
     }
 
     [RelayCommand]
@@ -35,14 +50,24 @@ public partial class DockerViewModel : ViewModelBase
         if (Host is null)
             return;
 
+        var host = Host;
         IsBusy = true;
         LastError = null;
         try
         {
-            var containers = await dockerProvider.ListContainersAsync(Host, cancellationToken).ConfigureAwait(false);
+            var containers = await dockerProvider.ListContainersAsync(host, cancellationToken);
+            if (!ReferenceEquals(host, Host))
+                return;
+
+            var selectedId = SelectedContainer?.Id;
             Containers.Clear();
             foreach (var container in containers)
                 Containers.Add(new DockerContainerViewModel(container));
+            SelectedContainer = Containers.FirstOrDefault(c => c.Id == selectedId);
+            HasLoaded = true;
+        }
+        catch (OperationCanceledException)
+        {
         }
         catch (Exception ex)
         {
@@ -51,6 +76,7 @@ public partial class DockerViewModel : ViewModelBase
         finally
         {
             IsBusy = false;
+            NotifySummary();
         }
     }
 
@@ -72,8 +98,8 @@ public partial class DockerViewModel : ViewModelBase
         LastError = null;
         try
         {
-            await dockerProvider.ExecuteAsync(Host, action, container.Id, CancellationToken.None).ConfigureAwait(false);
-            await RefreshAsync(CancellationToken.None).ConfigureAwait(false);
+            await dockerProvider.ExecuteAsync(Host, action, container.Id, CancellationToken.None);
+            await RefreshAsync(CancellationToken.None);
         }
         catch (Exception ex)
         {
@@ -83,5 +109,12 @@ public partial class DockerViewModel : ViewModelBase
         {
             IsBusy = false;
         }
+    }
+
+    private void NotifySummary()
+    {
+        OnPropertyChanged(nameof(RunningCount));
+        OnPropertyChanged(nameof(SummaryText));
+        OnPropertyChanged(nameof(IsEmpty));
     }
 }

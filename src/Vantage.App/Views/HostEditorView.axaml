@@ -1,0 +1,176 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Vantage.App.ViewModels"
+             xmlns:conv="clr-namespace:Vantage.App.Converters"
+             mc:Ignorable="d"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             x:Class="Vantage.App.Views.HostEditorView"
+             x:DataType="vm:HostEditorViewModel"
+             x:CompileBindings="True">
+
+  <UserControl.Styles>
+    <Style Selector="TextBlock.label">
+      <Setter Property="Foreground" Value="#B4BCC8" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Margin" Value="0,0,12,0" />
+    </Style>
+    <Style Selector="Grid.form > TextBox, Grid.form > NumericUpDown, Grid.form > ComboBox">
+      <Setter Property="Margin" Value="0,4" />
+    </Style>
+  </UserControl.Styles>
+
+  <Grid ColumnDefinitions="230,*" Margin="4">
+
+    <Border Grid.Column="0" Classes="card" Padding="8,10" Margin="0,0,12,0">
+      <Grid RowDefinitions="Auto,*">
+        <DockPanel Grid.Row="0" Margin="6,0,0,8">
+          <Button DockPanel.Dock="Right" Content="Add host" Command="{Binding AddHostCommand}" />
+          <TextBlock Text="Hosts" FontWeight="SemiBold" VerticalAlignment="Center" />
+        </DockPanel>
+        <ListBox Grid.Row="1" ItemsSource="{Binding Drafts}" SelectedItem="{Binding SelectedDraft}" Background="Transparent">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:HostDraftViewModel">
+              <StackPanel Margin="0,2" Spacing="1">
+                <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                <TextBlock Classes="muted" Text="{Binding EndpointText}" TextTrimming="CharacterEllipsis" />
+                <TextBlock Classes="muted" Text="Unsaved changes" Foreground="#FFB300" IsVisible="{Binding IsDirty}" />
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </Grid>
+    </Border>
+
+    <StackPanel Grid.Column="1" Margin="4,8" Spacing="8" IsVisible="{Binding HasNoHosts}">
+      <TextBlock Text="No hosts configured" FontSize="16" FontWeight="SemiBold" />
+      <TextBlock Classes="caption" TextWrapping="Wrap"
+                 Text="Add a host with its SSH address and credentials. Vantage polls every configured host on each refresh." />
+    </StackPanel>
+
+    <Border Grid.Column="1" Classes="card" Padding="18,14" IsVisible="{Binding HasSelection}">
+      <ScrollViewer>
+        <StackPanel Spacing="14" Margin="0,0,12,0" MaxWidth="720" HorizontalAlignment="Left">
+
+          <StackPanel Spacing="2">
+            <TextBlock Text="{Binding SelectedDraft.DisplayName}" FontSize="20" FontWeight="SemiBold" />
+            <TextBlock Classes="caption" Text="{Binding SelectedDraft.EndpointText}" />
+          </StackPanel>
+
+          <TextBlock Classes="section" Text="Connection" />
+          <Grid Classes="form" ColumnDefinitions="130,*" RowDefinitions="Auto,Auto,Auto,Auto">
+            <TextBlock Grid.Row="0" Grid.Column="0" Classes="label" Text="Display name" />
+            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding SelectedDraft.Name}" Watermark="Optional, defaults to the address" />
+            <TextBlock Grid.Row="1" Grid.Column="0" Classes="label" Text="Address" />
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SelectedDraft.Address}" Watermark="host.example.net or 192.0.2.10" />
+            <TextBlock Grid.Row="2" Grid.Column="0" Classes="label" Text="SSH port" />
+            <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding SelectedDraft.Port}" Minimum="1" Maximum="65535"
+                           Increment="1" FormatString="0" HorizontalAlignment="Left" Width="160" />
+            <TextBlock Grid.Row="3" Grid.Column="0" Classes="label" Text="Username" />
+            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding SelectedDraft.Username}" />
+          </Grid>
+
+          <TextBlock Classes="section" Text="Authentication" />
+          <Grid Classes="form" ColumnDefinitions="130,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+            <TextBlock Grid.Row="0" Grid.Column="0" Classes="label" Text="Method" />
+            <ComboBox Grid.Row="0" Grid.Column="1" ItemsSource="{Binding SelectedDraft.AuthMethods}"
+                      SelectedIndex="{Binding SelectedDraft.AuthMethodIndex}" MinWidth="160" />
+            <TextBlock Grid.Row="1" Grid.Column="0" Classes="label" Text="Private key" IsVisible="{Binding SelectedDraft.UsesPrivateKey}" />
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SelectedDraft.PrivateKeyPath}" Watermark="~/.ssh/id_ed25519"
+                     IsVisible="{Binding SelectedDraft.UsesPrivateKey}" />
+            <TextBlock Grid.Row="2" Grid.Column="0" Classes="label" Text="Key passphrase" IsVisible="{Binding SelectedDraft.UsesPrivateKey}" />
+            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding SelectedDraft.PrivateKeyPassphrase}" PasswordChar="&#x2022;"
+                     Watermark="Leave empty for an unencrypted key" IsVisible="{Binding SelectedDraft.UsesPrivateKey}" />
+            <TextBlock Grid.Row="3" Grid.Column="0" Classes="label" Text="Password" IsVisible="{Binding SelectedDraft.UsesPassword}" />
+            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding SelectedDraft.Password}" PasswordChar="&#x2022;"
+                     IsVisible="{Binding SelectedDraft.UsesPassword}" />
+            <TextBlock Grid.Row="4" Grid.Column="1" Classes="caption" TextWrapping="Wrap" Margin="0,2,0,0"
+                       Text="{Binding SecretStorageNote}" />
+          </Grid>
+
+          <TextBlock Classes="section" Text="Actions on the host" />
+          <StackPanel Spacing="4">
+            <CheckBox Content="Run service and process actions through sudo -n" IsChecked="{Binding SelectedDraft.UseSudo}" />
+            <TextBlock Classes="caption" TextWrapping="Wrap" Margin="28,0,0,0"
+                       Text="Needed when the SSH user is not root. Requires passwordless sudo for systemctl and kill; the connection test checks it." />
+          </StackPanel>
+
+          <TextBlock Classes="section" Text="Metrics" />
+          <Grid Classes="form" ColumnDefinitions="130,*" RowDefinitions="Auto,Auto,Auto">
+            <TextBlock Grid.Row="0" Grid.Column="0" Classes="label" Text="Disk mount" />
+            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding SelectedDraft.DiskMount}" Watermark="/" />
+            <TextBlock Grid.Row="1" Grid.Column="0" Classes="label" Text="Metrics endpoint" />
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SelectedDraft.MetricsEndpoint}"
+                     Watermark="{Binding SelectedDraft.MetricsEndpointHint}" />
+            <TextBlock Grid.Row="2" Grid.Column="1" Classes="caption" TextWrapping="Wrap" Margin="0,2,0,0"
+                       Text="node_exporter URL used with VANTAGE_PROVIDERS=prometheus. Leave empty for the default on port 9100." />
+          </Grid>
+
+          <ItemsControl ItemsSource="{Binding ValidationErrors}" IsVisible="{Binding HasValidationErrors}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="x:String">
+                <TextBlock Classes="error" Text="{Binding}" Margin="0,1" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <WrapPanel IsVisible="{Binding !IsConfirmingRemove}">
+            <Button Content="Save" Command="{Binding SaveCommand}" IsEnabled="{Binding SelectedDraft.IsDirty}" Margin="0,0,8,8" />
+            <Button Content="Discard changes" Command="{Binding DiscardCommand}" IsEnabled="{Binding SelectedDraft.IsDirty}" Margin="0,0,8,8" />
+            <Button Content="Test connection" Command="{Binding TestConnectionCommand}" Margin="0,0,8,8" />
+            <Button Content="Remove host" Classes="danger" Command="{Binding RequestRemoveCommand}" Margin="16,0,8,8" />
+            <TextBlock Classes="caption" Text="Testing..." VerticalAlignment="Center" Margin="0,0,0,8" IsVisible="{Binding IsTesting}" />
+          </WrapPanel>
+
+          <Border Classes="confirm" IsVisible="{Binding IsConfirmingRemove}">
+            <DockPanel>
+              <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
+                <Button Content="Remove" Classes="danger" Command="{Binding ConfirmRemoveCommand}" />
+                <Button Content="Cancel" Command="{Binding CancelRemoveCommand}" />
+              </StackPanel>
+              <TextBlock Text="{Binding RemoveConfirmText}" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,12,0" />
+            </DockPanel>
+          </Border>
+
+          <TextBlock Classes="success" Text="{Binding StatusMessage}"
+                     IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+          <TextBlock Classes="error" Text="{Binding LastError}"
+                     IsVisible="{Binding LastError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+          <StackPanel Spacing="8" IsVisible="{Binding HasTestResult}">
+            <TextBlock Classes="section" Text="{Binding TestSummary}"
+                       Foreground="{Binding TestTone, Converter={x:Static conv:StateBrushConverters.ToneBrush}}" />
+            <ItemsControl ItemsSource="{Binding TestSteps}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:ConnectionStepViewModel">
+                  <Grid ColumnDefinitions="20,140,*,Auto" Margin="0,3">
+                    <Ellipse Grid.Column="0" Width="9" Height="9" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0,5,0,0"
+                             Fill="{Binding Tone, Converter={x:Static conv:StateBrushConverters.ToneBrush}}" />
+                    <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="SemiBold" />
+                    <TextBlock Grid.Column="2" Text="{Binding Detail}" TextWrapping="Wrap" Foreground="#B4BCC8" />
+                    <TextBlock Grid.Column="3" Classes="caption" Text="{Binding LatencyText}" Margin="12,0,0,0" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+
+          <Border Classes="confirm" IsVisible="{Binding HasUnknownHostKey}">
+            <DockPanel>
+              <Button DockPanel.Dock="Right" Content="Trust and save key" Command="{Binding TrustHostKeyCommand}"
+                      VerticalAlignment="Center" />
+              <StackPanel Spacing="4" Margin="0,0,12,0">
+                <TextBlock Text="Unknown host key" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding UnknownHostKeyText}" TextWrapping="Wrap" />
+                <TextBlock Classes="caption" TextWrapping="Wrap"
+                           Text="Compare the fingerprint with ssh-keygen -lf /etc/ssh/ssh_host_*_key.pub on the host before trusting it. Trusted keys are saved to Vantage's own known_hosts file." />
+              </StackPanel>
+            </DockPanel>
+          </Border>
+
+        </StackPanel>
+      </ScrollViewer>
+    </Border>
+
+  </Grid>
+</UserControl>

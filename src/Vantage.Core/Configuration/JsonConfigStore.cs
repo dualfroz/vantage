@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Vantage.Core.Models;
 
@@ -13,9 +14,12 @@ public sealed class JsonConfigStore : IConfigStore
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
     };
 
-    public JsonConfigStore(string path)
+    private readonly string homeDirectory;
+
+    public JsonConfigStore(string path, string? homeDirectory = null)
     {
         Path = path;
+        this.homeDirectory = homeDirectory ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
     }
 
     public string Path { get; }
@@ -31,11 +35,15 @@ public sealed class JsonConfigStore : IConfigStore
         if (!File.Exists(Path))
             return new VantageConfig();
 
-        await using var stream = File.OpenRead(Path);
-        var config = await JsonSerializer
-            .DeserializeAsync<VantageConfig>(stream, SerializerOptions, cancellationToken)
-            .ConfigureAwait(false);
-        return config ?? new VantageConfig();
+        var text = await File.ReadAllTextAsync(Path, cancellationToken).ConfigureAwait(false);
+        if (JsonNode.Parse(text) is not { } root)
+            return new VantageConfig();
+
+        var notices = LegacyConfigMigration.Apply(root, homeDirectory);
+        var config = root.Deserialize<VantageConfig>(SerializerOptions) ?? new VantageConfig();
+        config.LoadNotices.AddRange(notices);
+        config.MigratedOnLoad = notices.Count > 0;
+        return config;
     }
 
     public async Task SaveAsync(VantageConfig config, CancellationToken cancellationToken = default)

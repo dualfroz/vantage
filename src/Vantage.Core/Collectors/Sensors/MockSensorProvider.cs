@@ -15,14 +15,14 @@ public sealed class MockSensorProvider : ISensorProvider
     public Task<SensorSnapshot> GetSnapshotAsync(HostConfig host, CancellationToken cancellationToken)
     {
         var seconds = clock().ToUnixTimeSeconds();
-        var wave = Math.Sin(seconds / 120.0) * 6;
+        var swing = Math.Sin(seconds / 120.0) * 6;
 
         var temperatures = new[]
         {
-            new TemperatureReading("x86_pkg_temp", Math.Round(48 + wave, 1)),
-            new TemperatureReading("coretemp Core 0", Math.Round(46 + wave * 0.8, 1)),
-            new TemperatureReading("nvme Composite", Math.Round(38 + wave * 0.4, 1)),
-            new TemperatureReading("acpitz", Math.Round(41 + wave * 0.5, 1))
+            new TemperatureReading("x86_pkg_temp", Math.Round(48 + swing, 1)),
+            new TemperatureReading("coretemp Core 0", Math.Round(46 + swing * 0.8, 1)),
+            new TemperatureReading("nvme Composite", Math.Round(38 + swing * 0.4, 1)),
+            new TemperatureReading("acpitz", Math.Round(41 + swing * 0.5, 1))
         };
 
         var gpus = profiles.HasGpu(host.Id)
@@ -30,8 +30,8 @@ public sealed class MockSensorProvider : ISensorProvider
             {
                 new GpuReading(
                     "NVIDIA GeForce RTX 3060",
-                    Math.Round(52 + wave, 1),
-                    Math.Round(Math.Clamp(30 + wave * 4, 0, 100), 1),
+                    Math.Round(52 + swing, 1),
+                    Math.Round(Math.Clamp(30 + swing * 4, 0, 100), 1),
                     3_200L * 1024 * 1024,
                     12_288L * 1024 * 1024)
             }

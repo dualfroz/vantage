@@ -1,0 +1,82 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Vantage.App.ViewModels"
+             mc:Ignorable="d"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             x:Class="Vantage.App.Views.ProcessesView"
+             x:DataType="vm:ProcessesViewModel"
+             x:CompileBindings="True">
+
+  <Grid RowDefinitions="Auto,*,Auto" Margin="4">
+
+    <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,Auto,*" Margin="0,0,0,8">
+      <Button Grid.Column="0" Content="Refresh" Command="{Binding RefreshCommand}" />
+      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" Margin="12,0,0,0" VerticalAlignment="Center">
+        <TextBlock Classes="caption" Text="Top" VerticalAlignment="Center" />
+        <ComboBox ItemsSource="{Binding Limits}" SelectedItem="{Binding SelectedLimit}" MinWidth="80" />
+        <TextBlock Classes="caption" Text="by CPU" VerticalAlignment="Center" />
+      </StackPanel>
+      <TextBox Grid.Column="2" Width="240" Margin="12,0,0,0" Text="{Binding FilterText}"
+               Watermark="Filter by command, user or PID" />
+      <TextBlock Grid.Column="3" Text="{Binding LastError}" Classes="error" Margin="12,0,0,0" VerticalAlignment="Center"
+                 TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"
+                 IsVisible="{Binding LastError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+    </Grid>
+
+    <Border Grid.Row="1" Classes="card" Padding="6,10">
+      <Grid RowDefinitions="Auto,*">
+        <Grid Grid.Row="0" ColumnDefinitions="80,130,80,90,*" Margin="8,0,8,6">
+          <Button Grid.Column="0" Classes="header" Content="{Binding PidHeader}" Command="{Binding SortByCommand}" CommandParameter="Pid" />
+          <Button Grid.Column="1" Classes="header" Content="{Binding UserHeader}" Command="{Binding SortByCommand}" CommandParameter="User" />
+          <Button Grid.Column="2" Classes="header" Content="{Binding CpuHeader}" Command="{Binding SortByCommand}" CommandParameter="Cpu"
+                  HorizontalAlignment="Right" />
+          <Button Grid.Column="3" Classes="header" Content="{Binding MemoryHeader}" Command="{Binding SortByCommand}" CommandParameter="Memory"
+                  HorizontalAlignment="Right" />
+          <Button Grid.Column="4" Classes="header" Content="{Binding CommandHeader}" Command="{Binding SortByCommand}" CommandParameter="Command"
+                  Margin="20,0,0,0" />
+        </Grid>
+        <ListBox Grid.Row="1" Classes="table" ItemsSource="{Binding Processes}" SelectedItem="{Binding SelectedProcess}"
+                 Background="Transparent">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:ProcessRowViewModel">
+              <Grid ColumnDefinitions="80,130,80,90,*">
+                <TextBlock Grid.Column="0" Text="{Binding PidText}" Foreground="#8891A0" />
+                <TextBlock Grid.Column="1" Text="{Binding User}" TextTrimming="CharacterEllipsis" Margin="0,0,8,0" />
+                <TextBlock Grid.Column="2" Classes="numeric" Text="{Binding CpuText}" Foreground="{DynamicResource AccentBrush}" />
+                <TextBlock Grid.Column="3" Classes="numeric" Text="{Binding MemoryText}" />
+                <TextBlock Grid.Column="4" Text="{Binding Command}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Margin="20,0,0,0" />
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </Grid>
+    </Border>
+
+    <Grid Grid.Row="2" Margin="0,10,0,0" RowDefinitions="Auto,Auto">
+      <DockPanel Grid.Row="0" IsVisible="{Binding !IsConfirming}">
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" IsEnabled="{Binding CanSignal}">
+          <Button Content="Terminate" Command="{Binding RequestTerminateCommand}"
+                  ToolTip.Tip="Ask the process to exit (SIGTERM)" />
+          <Button Content="Kill" Classes="danger" Command="{Binding RequestKillCommand}"
+                  ToolTip.Tip="Force the process to stop immediately (SIGKILL)" />
+        </StackPanel>
+        <TextBlock Classes="caption" Text="{Binding SummaryText}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+      </DockPanel>
+
+      <Border Grid.Row="0" Classes="confirm" IsVisible="{Binding IsConfirming}">
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
+            <Button Content="Send signal" Classes="danger" Command="{Binding ConfirmSignalCommand}" />
+            <Button Content="Cancel" Command="{Binding CancelSignalCommand}" />
+          </StackPanel>
+          <TextBlock Text="{Binding ConfirmText}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,12,0" />
+        </DockPanel>
+      </Border>
+
+      <TextBlock Grid.Row="1" Classes="success" Margin="0,8,0,0" Text="{Binding StatusMessage}"
+                 IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+    </Grid>
+
+  </Grid>
+</UserControl>

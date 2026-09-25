@@ -1,0 +1,80 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Vantage.App.ViewModels"
+             xmlns:controls="clr-namespace:Vantage.App.Controls"
+             mc:Ignorable="d"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             x:Class="Vantage.App.Views.NetworkView"
+             x:DataType="vm:NetworkViewModel"
+             x:CompileBindings="True">
+
+  <Grid RowDefinitions="Auto,Auto,*" Margin="4">
+
+    <DockPanel Grid.Row="0" Margin="0,0,0,8">
+      <TextBlock DockPanel.Dock="Right" Classes="caption" Text="{Binding SampledAtText}" VerticalAlignment="Center" />
+      <StackPanel Orientation="Horizontal" Spacing="12">
+        <Button Content="Refresh" Command="{Binding RefreshCommand}" />
+        <CheckBox Content="Show loopback" IsChecked="{Binding ShowLoopback}" VerticalAlignment="Center" />
+        <TextBlock Text="{Binding LastError}" Classes="error" VerticalAlignment="Center" TextWrapping="NoWrap"
+                   TextTrimming="CharacterEllipsis"
+                   IsVisible="{Binding LastError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+      </StackPanel>
+    </DockPanel>
+
+    <Grid Grid.Row="1" ColumnDefinitions="*,*" Margin="0,0,0,12">
+      <Border Grid.Column="0" Classes="card" Margin="0,0,6,0">
+        <StackPanel Spacing="6">
+          <DockPanel>
+            <TextBlock Text="Receive" FontWeight="SemiBold" DockPanel.Dock="Left" />
+            <TextBlock Text="{Binding TotalRxRateText}" HorizontalAlignment="Right" Foreground="{DynamicResource AccentBrush}" />
+          </DockPanel>
+          <controls:SparklineControl Values="{Binding RxPoints}" Maximum="{Binding RateMaximum}" Height="56"
+                                     Stroke="{DynamicResource AccentBrush}" Fill="#1A4FC3F7" />
+          <TextBlock Classes="caption" Text="{Binding TotalRxText, StringFormat='Total received: {0}'}" />
+        </StackPanel>
+      </Border>
+      <Border Grid.Column="1" Classes="card" Margin="6,0,0,0">
+        <StackPanel Spacing="6">
+          <DockPanel>
+            <TextBlock Text="Transmit" FontWeight="SemiBold" DockPanel.Dock="Left" />
+            <TextBlock Text="{Binding TotalTxRateText}" HorizontalAlignment="Right" Foreground="#66BB6A" />
+          </DockPanel>
+          <controls:SparklineControl Values="{Binding TxPoints}" Maximum="{Binding RateMaximum}" Height="56"
+                                     Stroke="#66BB6A" Fill="#1A66BB6A" />
+          <TextBlock Classes="caption" Text="{Binding TotalTxText, StringFormat='Total sent: {0}'}" />
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <Border Grid.Row="2" Classes="card" Padding="6,10">
+      <Grid RowDefinitions="Auto,Auto,*">
+        <Grid Grid.Row="0" ColumnDefinitions="2*,*,*,*,*,1.4*" Margin="8,0,8,6">
+          <TextBlock Grid.Column="0" Classes="muted" Text="Interface" />
+          <TextBlock Grid.Column="1" Classes="muted numeric" Text="Receive" />
+          <TextBlock Grid.Column="2" Classes="muted numeric" Text="Transmit" />
+          <TextBlock Grid.Column="3" Classes="muted numeric" Text="Received" />
+          <TextBlock Grid.Column="4" Classes="muted numeric" Text="Sent" />
+          <TextBlock Grid.Column="5" Classes="muted numeric" Text="Packets in / out" />
+        </Grid>
+        <TextBlock Grid.Row="1" Classes="caption" Margin="8,0,8,6" IsVisible="{Binding IsWaitingForSecondSample}"
+                   Text="Rates are calculated from two samples and appear after the next refresh." />
+        <ListBox Grid.Row="2" Classes="table" ItemsSource="{Binding Interfaces}" Background="Transparent">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:NetworkInterfaceViewModel">
+              <Grid ColumnDefinitions="2*,*,*,*,*,1.4*">
+                <TextBlock Grid.Column="0" Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                <TextBlock Grid.Column="1" Classes="numeric" Text="{Binding RxRateText}" Foreground="{DynamicResource AccentBrush}" />
+                <TextBlock Grid.Column="2" Classes="numeric" Text="{Binding TxRateText}" Foreground="#66BB6A" />
+                <TextBlock Grid.Column="3" Classes="numeric" Text="{Binding RxTotalText}" />
+                <TextBlock Grid.Column="4" Classes="numeric" Text="{Binding TxTotalText}" />
+                <TextBlock Grid.Column="5" Classes="numeric" Text="{Binding PacketsText}" Foreground="#8891A0" TextTrimming="CharacterEllipsis" />
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </Grid>
+    </Border>
+
+  </Grid>
+</UserControl>

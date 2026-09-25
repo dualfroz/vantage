@@ -25,6 +25,15 @@ public static class ValueFormatting
 
     public static string BytesPair(long used, long total) => $"{Bytes(used)} / {Bytes(total)}";
 
+    public static string Rate(double bytesPerSecond) =>
+        Bytes((long)Math.Round(Math.Max(0, bytesPerSecond))) + "/s";
+
+    public static string Count(long value) => value.ToString("N0", CultureInfo.InvariantCulture);
+
+    public static string Celsius(double value) => value.ToString("0.0", CultureInfo.InvariantCulture) + " °C";
+
+    public static string Percent(double value) => value.ToString("0.0", CultureInfo.InvariantCulture) + " %";
+
     public static string Uptime(TimeSpan uptime)
     {
         if (uptime.TotalDays >= 1)

@@ -1,0 +1,82 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Vantage.App.ViewModels"
+             xmlns:logs="clr-namespace:Vantage.Core.Logs;assembly=Vantage.Core"
+             mc:Ignorable="d"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             x:Class="Vantage.App.Views.LogsView"
+             x:DataType="vm:LogsViewModel"
+             x:CompileBindings="True">
+
+  <Grid RowDefinitions="Auto,Auto,*" Margin="4">
+
+    <WrapPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,4" IsVisible="{Binding HasSources}">
+      <ComboBox ItemsSource="{Binding Sources}" SelectedItem="{Binding SelectedSource}" MinWidth="140" Margin="0,0,8,6"
+                ToolTip.Tip="Log source">
+        <ComboBox.ItemTemplate>
+          <DataTemplate x:DataType="logs:LogSource">
+            <TextBlock Text="{Binding Label}" />
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+      <ComboBox ItemsSource="{Binding LineCounts}" SelectedItem="{Binding SelectedLineCount}" MinWidth="90" Margin="0,0,8,6"
+                ToolTip.Tip="Number of most recent lines to read" />
+      <ComboBox ItemsSource="{Binding SincePresets}" SelectedItem="{Binding SelectedSince}" MinWidth="150" Margin="0,0,8,6"
+                IsVisible="{Binding IsJournalSource}" ToolTip.Tip="Only lines newer than this">
+        <ComboBox.ItemTemplate>
+          <DataTemplate x:DataType="logs:LogSincePreset">
+            <TextBlock Text="{Binding Label}" />
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+      <TextBox Width="220" Margin="0,0,8,6" Text="{Binding FilterText}" Watermark="Lines containing (exact text)">
+        <TextBox.KeyBindings>
+          <KeyBinding Gesture="Enter" Command="{Binding RefreshCommand}" />
+        </TextBox.KeyBindings>
+      </TextBox>
+      <Button Content="Load" Command="{Binding RefreshCommand}" Margin="0,0,8,6" />
+      <Button Content="Clear filter" Command="{Binding ClearFilterCommand}" Margin="0,0,12,6"
+              IsVisible="{Binding AppliedFilterText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+      <CheckBox Content="Reload every refresh" IsChecked="{Binding AutoRefresh}" Margin="0,0,0,6" VerticalAlignment="Center" />
+    </WrapPanel>
+
+    <DockPanel Grid.Row="1" Margin="2,0,0,8" IsVisible="{Binding HasSources}">
+      <TextBlock DockPanel.Dock="Right" Classes="caption" Text="{Binding LoadedAtText}" />
+      <StackPanel Orientation="Horizontal" Spacing="14">
+        <TextBlock Classes="caption mono" Text="{Binding SourceTargetText}" />
+        <TextBlock Classes="caption" Text="{Binding SummaryText}" />
+        <TextBlock Text="Loading..." Classes="caption" IsVisible="{Binding IsBusy}" />
+        <TextBlock Text="{Binding LastError}" Classes="error" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"
+                   IsVisible="{Binding LastError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+      </StackPanel>
+    </DockPanel>
+
+    <Border Grid.Row="2" Classes="card" Padding="6,8">
+      <Grid>
+        <ListBox Classes="table" ItemsSource="{Binding Lines}" Background="Transparent" IsVisible="{Binding HasSources}">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:LogLineViewModel">
+              <Grid ColumnDefinitions="112,130,*">
+                <TextBlock Grid.Column="0" Classes="mono" Text="{Binding TimeText}" Foreground="#8891A0" />
+                <TextBlock Grid.Column="1" Classes="mono" Text="{Binding UnitText}" Foreground="{DynamicResource AccentBrush}"
+                           TextTrimming="CharacterEllipsis" Margin="0,0,10,0" />
+                <TextBlock Grid.Column="2" Classes="mono" Text="{Binding Message}" TextWrapping="Wrap" />
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+
+        <TextBlock Classes="caption" Margin="8" IsVisible="{Binding IsEmpty}"
+                   Text="No lines matched. Widen the time range or change the filter." />
+
+        <StackPanel Margin="8" Spacing="6" IsVisible="{Binding HasNoSources}">
+          <TextBlock Text="No log sources configured" FontWeight="SemiBold" />
+          <TextBlock Classes="caption" TextWrapping="Wrap"
+                     Text="Add journal units or file paths to logSources in config.json, then restart Vantage." />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+  </Grid>
+</UserControl>

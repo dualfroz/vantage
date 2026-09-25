@@ -9,8 +9,8 @@
         x:Class="Vantage.App.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         x:CompileBindings="True"
-        Width="1080" Height="720"
-        MinWidth="820" MinHeight="560"
+        Width="1180" Height="760"
+        MinWidth="900" MinHeight="600"
         Background="#12151B"
         Title="Vantage - homelab dashboard">
 
@@ -18,10 +18,12 @@
 
     <Border Grid.Row="0" Grid.Column="0" Background="#161A22" BorderBrush="#2C323D" BorderThickness="0,0,1,0">
       <Grid RowDefinitions="Auto,*">
-        <StackPanel Grid.Row="0" Margin="16,16,16,8" Spacing="2">
-          <TextBlock Text="VANTAGE" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" />
-          <TextBlock Text="Hosts" Foreground="#8891A0" FontSize="12" />
-        </StackPanel>
+        <Grid Grid.Row="0" Margin="16,16,12,8" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+          <TextBlock Grid.Row="0" Grid.Column="0" Text="VANTAGE" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" />
+          <TextBlock Grid.Row="1" Grid.Column="0" Text="Hosts" Foreground="#8891A0" FontSize="12" VerticalAlignment="Center" />
+          <Button Grid.Row="1" Grid.Column="1" Classes="header" Content="Manage"
+                  Command="{Binding OpenHostEditorCommand}" ToolTip.Tip="Add, edit or remove hosts" />
+        </Grid>
 
         <ListBox Grid.Row="1" ItemsSource="{Binding Hosts}" SelectedItem="{Binding SelectedHost}"
                  Background="Transparent" Margin="8,0">
@@ -31,19 +33,27 @@
                 <Ellipse Grid.Column="0" Width="10" Height="10" VerticalAlignment="Center" Margin="0,0,10,0"
                          Fill="{Binding IsOnline, Converter={x:Static conv:StateBrushConverters.RunningBrush}}" />
                 <StackPanel Grid.Column="1">
-                  <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
-                  <TextBlock Text="{Binding Endpoint}" Foreground="#8891A0" FontSize="11" />
+                  <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                  <TextBlock Text="{Binding Endpoint}" Foreground="#8891A0" FontSize="11" TextTrimming="CharacterEllipsis" />
                 </StackPanel>
               </Grid>
             </DataTemplate>
           </ListBox.ItemTemplate>
         </ListBox>
+
+        <StackPanel Grid.Row="1" Margin="16,8" Spacing="8" IsVisible="{Binding HasNoHosts}">
+          <TextBlock Text="No hosts yet." FontWeight="SemiBold" />
+          <TextBlock Classes="caption" TextWrapping="Wrap"
+                     Text="Add a host with its SSH address and credentials to start collecting metrics." />
+          <Button Content="Add a host" Command="{Binding OpenHostEditorCommand}" />
+        </StackPanel>
       </Grid>
     </Border>
 
-    <Grid Grid.Row="0" Grid.Column="1" RowDefinitions="Auto,*" Margin="16">
+    <Grid Grid.Row="0" Grid.Column="1" RowDefinitions="Auto,Auto,*" Margin="16">
       <DockPanel Grid.Row="0" Margin="0,0,0,12">
-        <Button DockPanel.Dock="Right" Content="Refresh now" Command="{Binding RefreshSelectedHostCommand}" />
+        <Button DockPanel.Dock="Right" Content="Refresh now" Command="{Binding RefreshSelectedHostCommand}"
+                ToolTip.Tip="Poll the selected host and reload the open host panel" />
         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
           <TextBlock Text="Monitoring" Foreground="#8891A0" VerticalAlignment="Center" />
           <Ellipse Width="9" Height="9" VerticalAlignment="Center"
@@ -51,27 +61,83 @@
         </StackPanel>
       </DockPanel>
 
-      <TabControl Grid.Row="1">
+      <Border Grid.Row="1" Classes="confirm" Margin="0,0,0,12" IsVisible="{Binding HasNotices}">
+        <DockPanel>
+          <Button DockPanel.Dock="Right" Content="Dismiss" Command="{Binding DismissNoticesCommand}" VerticalAlignment="Top" />
+          <ItemsControl ItemsSource="{Binding Notices}" Margin="0,0,12,0">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="x:String">
+                <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,2" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </DockPanel>
+      </Border>
+
+      <TabControl Grid.Row="2" SelectedIndex="{Binding SelectedTabIndex}">
         <TabItem Header="Fleet">
           <views:FleetView DataContext="{Binding}" />
         </TabItem>
+
         <TabItem Header="Host">
-          <views:HostMetricsView DataContext="{Binding SelectedHost}" />
+          <Grid RowDefinitions="Auto,*">
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="12" Margin="4,4,4,4" IsVisible="{Binding HasHosts}">
+              <TextBlock Text="{Binding SelectedHost.Name}" FontSize="22" FontWeight="SemiBold" VerticalAlignment="Center" />
+              <Border Background="{DynamicResource SurfaceAltBrush}" CornerRadius="10" Padding="8,2" VerticalAlignment="Center">
+                <TextBlock Text="{Binding SelectedHost.StatusText}" FontSize="12" />
+              </Border>
+              <TextBlock Text="{Binding SelectedHost.Endpoint}" Foreground="#8891A0" VerticalAlignment="Center" />
+            </StackPanel>
+
+            <TabControl Grid.Row="1" SelectedIndex="{Binding SelectedHostPanelIndex}" IsVisible="{Binding HasHosts}" Padding="0,8,0,0">
+              <TabControl.Resources>
+                <x:Double x:Key="TabItemHeaderFontSize">14</x:Double>
+                <x:Double x:Key="TabItemMinHeight">34</x:Double>
+              </TabControl.Resources>
+              <TabItem Header="Metrics">
+                <views:HostMetricsView DataContext="{Binding SelectedHost}" />
+              </TabItem>
+              <TabItem Header="Docker">
+                <views:DockerView DataContext="{Binding Docker}" />
+              </TabItem>
+              <TabItem Header="Network">
+                <views:NetworkView DataContext="{Binding Network}" />
+              </TabItem>
+              <TabItem Header="Processes">
+                <views:ProcessesView DataContext="{Binding Processes}" />
+              </TabItem>
+              <TabItem Header="Services">
+                <views:SystemdView DataContext="{Binding Services}" />
+              </TabItem>
+              <TabItem Header="Sensors">
+                <views:SensorsView DataContext="{Binding Sensors}" />
+              </TabItem>
+              <TabItem Header="Logs">
+                <views:LogsView DataContext="{Binding Logs}" />
+              </TabItem>
+            </TabControl>
+
+            <StackPanel Grid.Row="1" Margin="4,16" Spacing="8" IsVisible="{Binding HasNoHosts}">
+              <TextBlock Text="No host selected" FontSize="16" FontWeight="SemiBold" />
+              <TextBlock Classes="caption" Text="Host panels appear once at least one host is configured." />
+            </StackPanel>
+          </Grid>
         </TabItem>
+
         <TabItem Header="Alerts">
           <views:AlertsView DataContext="{Binding}" />
         </TabItem>
-        <TabItem Header="Docker">
-          <views:DockerView DataContext="{Binding Docker}" />
-        </TabItem>
         <TabItem Header="Health">
           <views:HealthView DataContext="{Binding}" />
+        </TabItem>
+        <TabItem Header="Hosts">
+          <views:HostEditorView DataContext="{Binding HostEditor}" />
         </TabItem>
       </TabControl>
     </Grid>
 
     <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Background="#161A22" BorderBrush="#2C323D" BorderThickness="0,1,0,0" Padding="16,6">
-      <TextBlock Text="{Binding StatusLine}" Foreground="#8891A0" FontSize="12" />
+      <TextBlock Text="{Binding StatusLine}" Foreground="#8891A0" FontSize="12" TextTrimming="CharacterEllipsis" />
     </Border>
 
   </Grid>
