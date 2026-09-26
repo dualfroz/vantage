@@ -49,7 +49,7 @@ public class PrometheusProviderTests
     {
         var handler = StubHttpMessageHandler.Sequence(PrometheusFixtures.NodeScrape1(), PrometheusFixtures.NodeScrape2());
         var provider = new PrometheusMetricsProvider(new HttpClient(handler), () => Now);
-        var host = new HostConfig { Id = "h1", Address = "10.0.0.1", MetricsEndpoint = "http://10.0.0.1:9100/metrics" };
+        var host = new HostConfig { Id = "h1", Address = "192.0.2.1", MetricsEndpoint = "http://192.0.2.1:9100/metrics" };
 
         var first = await provider.GetMetricsAsync(host, CancellationToken.None);
         var second = await provider.GetMetricsAsync(host, CancellationToken.None);
@@ -62,7 +62,7 @@ public class PrometheusProviderTests
     [Fact]
     public void ResolveMetricsEndpoint_DefaultsToNodeExporterPort()
     {
-        var host = new HostConfig { Address = "10.0.0.5" };
-        Assert.Equal("http://10.0.0.5:9100/metrics", host.ResolveMetricsEndpoint());
+        var host = new HostConfig { Address = "192.0.2.5" };
+        Assert.Equal("http://192.0.2.5:9100/metrics", host.ResolveMetricsEndpoint());
     }
 }

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Vantage.App.Tests.Fakes;
 using Vantage.App.ViewModels;
 using Vantage.Core.Alerts;
 using Vantage.Core.Configuration;
@@ -84,6 +85,7 @@ public class OverviewAndAlertWiringTests
             new MockDockerProvider(),
             new HealthChecker(new HttpClient()),
             await SeededStore(rule),
+            TestCollectors.Mock(),
             store,
             engine);
 
@@ -93,7 +95,13 @@ public class OverviewAndAlertWiringTests
         Assert.True(await store.CountAsync() >= 6);
         Assert.Contains(sink.Received, n => n.Kind == AlertTransitionKind.Fired);
         Assert.Equal(1, viewModel.FiringAlertCount);
-        Assert.NotEmpty(viewModel.Alerts);
+        var alert = Assert.Single(viewModel.Alerts);
+        Assert.Equal("vps01", alert.HostName);
+        Assert.Equal("cpu >= 80", alert.ConditionText);
+        var transition = Assert.Single(viewModel.RecentTransitions);
+        Assert.Equal("Fired", transition.KindText);
+        Assert.Equal("vps01", transition.HostName);
+        Assert.Equal("cpu >= 80, was 95", transition.DetailText);
     }
 
     [Fact]
@@ -109,6 +117,7 @@ public class OverviewAndAlertWiringTests
             new MockDockerProvider(),
             new HealthChecker(new HttpClient()),
             await SeededStore(rule),
+            TestCollectors.Mock(),
             store,
             engine);
 

@@ -46,5 +46,5 @@ public static class CollectorFixtures
     public const string JournalOutput =
         "2026-08-26T14:22:01+0200 vps01 nginx[1234]: GET /api/status 200 12ms\n" +
         "2026-08-26T14:22:03+0200 vps01 nginx[1234]: GET /health 200 3ms\n" +
-        "2026-08-26T14:22:05+0200 vps01 sshd[9911]: Accepted publickey for foksiu\n";
+        "2026-08-26T14:22:05+0200 vps01 sshd[9911]: Accepted publickey for demo from 198.51.100.7 port 50122 ssh2\n";
 }

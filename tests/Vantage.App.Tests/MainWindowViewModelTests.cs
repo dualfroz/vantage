@@ -14,7 +14,7 @@ public class MainWindowViewModelTests
         new JsonConfigStore(Path.Combine(Path.GetTempPath(), "vantage-vm-" + Guid.NewGuid().ToString("N"), "config.json"));
 
     private static MainWindowViewModel Build(IMetricsProvider metrics, IHealthChecker? health = null) =>
-        new(metrics, new MockDockerProvider(), health ?? new HealthChecker(new HttpClient()), EmptyStore());
+        new(metrics, new MockDockerProvider(), health ?? new HealthChecker(new HttpClient()), EmptyStore(), TestCollectors.Mock());
 
     [Fact]
     public async Task InitializeAsync_FallsBackToDemoDataWhenConfigEmpty()

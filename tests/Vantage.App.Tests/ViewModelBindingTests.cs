@@ -10,7 +10,7 @@ public class ViewModelBindingTests
     [Fact]
     public void HostViewModel_ApplyMetricsUpdatesTextsAndHistory()
     {
-        var host = new HostViewModel(new HostConfig { Name = "node", Address = "10.0.0.5", Username = "root", Port = 22 }, historyLength: 10);
+        var host = new HostViewModel(new HostConfig { Name = "node", Address = "192.0.2.5", Username = "root", Port = 22 }, historyLength: 10);
 
         host.ApplyMetrics(new HostMetrics
         {
@@ -31,7 +31,7 @@ public class ViewModelBindingTests
         Assert.Equal("4.0 GiB / 8.0 GiB", host.MemoryText);
         Assert.True(host.IsOnline);
         Assert.Equal("node", host.Name);
-        Assert.Equal("root@10.0.0.5:22", host.Endpoint);
+        Assert.Equal("root@192.0.2.5:22", host.Endpoint);
     }
 
     [Fact]
